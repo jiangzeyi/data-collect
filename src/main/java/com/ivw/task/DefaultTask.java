@@ -29,7 +29,6 @@ public class DefaultTask extends AbstractTask {
         Map<String, Object> sendData = new HashMap<>();
         sendData.put("sourceData", sourceData);
         sendData.put("handlerData", handlerData);
-        sendData.put("taskProperties", properties);
         properties.getSend().send(sendData);
 
     }
@@ -49,7 +48,7 @@ public class DefaultTask extends AbstractTask {
         // 可以执行数据库保存操作等的
         logger.info("任务执行完毕，任务名称：" + properties.getName() + "  总共耗时：" + (System.currentTimeMillis() - properties.getStartTime()) + "毫秒");
         // 更新相关配置
-        if (Objects.isNull(properties.getJdbcTemplate())) {
+        /*if (Objects.isNull(properties.getJdbcTemplate())) {
             return;
         }
         if(Objects.isNull(properties.getCollect().getProperties())) {
@@ -59,7 +58,7 @@ public class DefaultTask extends AbstractTask {
         map.put("collectParam",JSONObject.toJSONString(properties.getCollect().getProperties()));
         map.put("id",properties.getId());
         String updateSql = StrUtil.format(UPDATE_COLLECT_PARAM_SQL,map);
-        properties.getJdbcTemplate().update(updateSql);
+        properties.getJdbcTemplate().update(updateSql);*/
     }
 
     @Override

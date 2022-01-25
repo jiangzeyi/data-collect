@@ -11,7 +11,7 @@ import lombok.NonNull;
  * @author Yi
  */
 @Data
-@Builder
+@NoArgsConstructor
 public class DbIncrementCollectProperties extends AbstractDbCollectProperties {
 
     /**

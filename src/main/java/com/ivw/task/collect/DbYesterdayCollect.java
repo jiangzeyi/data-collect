@@ -6,6 +6,7 @@ import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.ivw.task.enums.DBType;
 import com.ivw.task.properties.DbBetweenCollectProperties;
+import com.ivw.task.properties.DbIncrementCollectProperties;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.*;
@@ -26,6 +27,8 @@ public class DbYesterdayCollect  extends DbAbstractCollect<DbBetweenCollectPrope
         Map<String, Object> pageParam = new HashMap<>();
         pageParam.put("beginDate", properties.getBeginDate());
         pageParam.put("endDate", properties.getEndDate());
+        pageParam.put("offset", properties.getOffset());
+        pageParam.put("page", properties.getPage());
         return pageParam;
     }
 
@@ -37,8 +40,6 @@ public class DbYesterdayCollect  extends DbAbstractCollect<DbBetweenCollectPrope
         if (properties.getSql().lastIndexOf("{beginDate}") == -1 && properties.getSql().lastIndexOf("{endDate}") == -1) {
             throw new RuntimeException("请检查 SQL 语句是否包含 {beginDate} 和 {endDate} 参数");
         }
-        properties.setBeginDate(DateUtil.beginOfDay(DateUtil.yesterday()).toString());
-        properties.setEndDate(DateUtil.endOfDay(DateUtil.yesterday()).toString());
     }
 
     @Override
@@ -51,19 +52,22 @@ public class DbYesterdayCollect  extends DbAbstractCollect<DbBetweenCollectPrope
         List<JSONObject> data = new ArrayList<>(jdbcTemplate.query(StrUtil.format(properties.getSql(), pageParam), convertJson));
 
         int size = data.size();
-        while (size > 0) {
-            if (DBType.MYSQL.toString().equals(properties.getDbType().toString())) {
-                pageParam.put("page", (Integer) pageParam.get("page") + properties.getOffset());
-            } else if (DBType.ORACLE.toString().equals(properties.getDbType().toString())) {
-                pageParam.put("page", (Integer) pageParam.get("page") + properties.getOffset());
-                pageParam.put("offset", (Integer) pageParam.get("offset") + properties.getOffset());
+        if (properties.getIsPage()) {
+            while (size > 0) {
+                if (DBType.MYSQL.toString().equals(properties.getDbType().toString())) {
+                    pageParam.put("page", (Integer) pageParam.get("page") + properties.getOffset());
+                } else if (DBType.ORACLE.toString().equals(properties.getDbType().toString())) {
+                    pageParam.put("page", (Integer) pageParam.get("page") + properties.getOffset());
+                    pageParam.put("offset", (Integer) pageParam.get("offset") + properties.getOffset());
+                }
+                logger.info("查询 Sql => {}", properties.getSql());
+                logger.info("查询参数 => {}", pageParam);
+                List<JSONObject> query = jdbcTemplate.query(StrUtil.format(properties.getSql(),pageParam), convertJson);
+                size = query.size();
+                data.addAll(query);
             }
-            logger.info("查询 Sql => {}", properties.getSql());
-            logger.info("查询参数 => {}", pageParam);
-            List<JSONObject> query = jdbcTemplate.query(StrUtil.format(properties.getSql(),pageParam), convertJson);
-            size = query.size();
-            data.addAll(query);
         }
+
         logger.debug("data：{}",data);
         // 数据库同步配置
         this.setProperties(properties);
