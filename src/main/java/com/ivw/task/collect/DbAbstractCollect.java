@@ -2,7 +2,10 @@ package com.ivw.task.collect;
 
 import com.ivw.task.convert.DBRowConvertJson;
 import com.ivw.task.properties.AbstractCollectProperties;
+import com.ivw.task.sql.SqlSource;
 import org.springframework.jdbc.core.JdbcTemplate;
+
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -24,5 +27,5 @@ public abstract class DbAbstractCollect<T extends AbstractCollectProperties> ext
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    abstract Map<String, Object> buildQueryParam();
+    abstract Object[] buildArgs(List<String> parameterMappings);
 }

@@ -10,4 +10,10 @@ import lombok.Data;
 @Builder
 public class HttpSendProperties extends AbstractSendProperties {
     private String url;
+
+    private Boolean proxyOpen;
+
+    private String proxyHost;
+
+    private Integer proxyPort;
 }

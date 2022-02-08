@@ -1,6 +1,7 @@
 package com.ivw.task.properties;
 
 import com.ivw.task.enums.DBType;
+import com.ivw.task.param.DefaultDbCollectParam;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
@@ -10,19 +11,12 @@ import lombok.NonNull;
  */
 @Data
 @NoArgsConstructor
-public abstract class AbstractDbCollectProperties extends AbstractCollectProperties {
+public abstract class AbstractDbCollectProperties<T extends DefaultDbCollectParam> extends AbstractCollectProperties {
 
     @NonNull
     private String sql;
 
-    @NonNull
-    private String strategy;
-
-    private Boolean isPage;
-
-    private Integer page;
-
-    private Integer offset;
-
     private DBType dbType;
+
+    private T param;
 }

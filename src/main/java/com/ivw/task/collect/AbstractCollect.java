@@ -1,6 +1,7 @@
 package com.ivw.task.collect;
 
 import com.ivw.task.properties.AbstractCollectProperties;
+import com.ivw.task.sql.SqlSource;
 import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,6 +13,8 @@ import org.slf4j.LoggerFactory;
 public abstract class AbstractCollect<T extends AbstractCollectProperties> implements Collect {
 
     T properties;
+
+    SqlSource sqlSource;
 
     final Logger logger = LoggerFactory.getLogger(AbstractCollect.class);
 
