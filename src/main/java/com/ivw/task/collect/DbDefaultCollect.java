@@ -22,9 +22,6 @@ public class DbDefaultCollect extends DbAbstractCollect<DbIncrementCollectProper
         super(jdbcTemplate);
     }
 
-    private Connection connection;
-
-
     @Override
     Object[] buildArgs(List<String> parameterMappings) {
         Object[] args = new Object[parameterMappings.size()];
@@ -55,34 +52,33 @@ public class DbDefaultCollect extends DbAbstractCollect<DbIncrementCollectProper
         if (parameterMappings == null || parameterMappings.isEmpty()) {
             return (jdbcTemplate.query(sqlSource.getSql(), convertJson));
         }
+        List<JSONObject> dataAll = new ArrayList<>();
 
-        List<JSONObject> data = new ArrayList<>(jdbcTemplate.query(sqlSource.getSql(), buildArgs(parameterMappings), convertJson));
-        int size = data.size();
-        if (properties.getParam().getIsPage()) {
-            while (size > 0) {
+        if (properties.getIsPage()) {
+            int size;
+            do {
+                List<JSONObject> data = new ArrayList<>(jdbcTemplate.query(sqlSource.getSql(), buildArgs(parameterMappings), convertJson));
+                dataAll.addAll(data);
+                size = data.size();
                 if (DBType.MYSQL.toString().equals(properties.getDbType().toString())) {
                     properties.getParam().setPage(properties.getParam().getPage() + properties.getParam().getOffset());
-//                    pageParam.put("page", (Integer) pageParam.get("page") + properties.getOffset());
                 } else if (DBType.ORACLE.toString().equals(properties.getDbType().toString())) {
                     properties.getParam().setPage(properties.getParam().getPage() + properties.getParam().getOffset());
                     properties.getParam().setOffset(properties.getParam().getOffset() + properties.getParam().getOffset());
-//                    pageParam.put("page", (Integer) pageParam.get("page") + properties.getOffset());
-//                    pageParam.put("offset", (Integer) pageParam.get("offset") + properties.getOffset());
                 }
-                List<JSONObject> query = jdbcTemplate.query(StrUtil.format(properties.getSql(),buildArgs(parameterMappings)), convertJson);
-                size = query.size();
-                data.addAll(query);
-            }
+            } while (size >0);
+        } else {
+            dataAll = jdbcTemplate.query(sqlSource.getSql(), buildArgs(parameterMappings), convertJson);
         }
         // 启用增量只记录最后 ID
-        if (properties.getParam().getIsIncrement()) {
+        if (properties.getIsIncrement()) {
             // 记录增量 Id
-            long maxPrimaryKey = data.stream().mapToLong(item -> item.getLong(properties.getParam().getPrimaryKey()))
+            long maxPrimaryKey = dataAll.stream().mapToLong(item -> item.getLong(properties.getPrimaryKey()))
                     .max().orElse(properties.getParam().getIncrementId());
             properties.getParam().setIncrementId(maxPrimaryKey);
         }
         // 数据库同步配置
-        return data;
+        return dataAll;
     }
 
     @Override

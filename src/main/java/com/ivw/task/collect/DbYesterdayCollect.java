@@ -53,30 +53,27 @@ public class DbYesterdayCollect  extends DbAbstractCollect<DbDateBetweenCollectP
         if (parameterMappings == null || parameterMappings.isEmpty()) {
             return (jdbcTemplate.query(sqlSource.getSql(), convertJson));
         }
-
-        List<JSONObject> data = new ArrayList<>(jdbcTemplate.query(sqlSource.getSql(), buildArgs(parameterMappings), convertJson));
-        int size = data.size();
-        if (properties.getParam().getIsPage()) {
-            while (size > 0) {
+        List<JSONObject> dataAll = new ArrayList<>();
+        if (!properties.getIsPage()) {
+            dataAll = jdbcTemplate.query(sqlSource.getSql(), buildArgs(parameterMappings), convertJson);
+        } else {
+            int size;
+            do {
+                List<JSONObject> data = jdbcTemplate.query(sqlSource.getSql(), buildArgs(parameterMappings), convertJson);
+                dataAll.addAll(data);
+                size = data.size();
                 if (DBType.MYSQL.toString().equals(properties.getDbType().toString())) {
                     properties.getParam().setPage(properties.getParam().getPage() + properties.getParam().getOffset());
-//                    pageParam.put("page", (Integer) pageParam.get("page") + properties.getOffset());
                 } else if (DBType.ORACLE.toString().equals(properties.getDbType().toString())) {
                     properties.getParam().setPage(properties.getParam().getPage() + properties.getParam().getOffset());
                     properties.getParam().setOffset(properties.getParam().getOffset() + properties.getParam().getOffset());
-//                    pageParam.put("page", (Integer) pageParam.get("page") + properties.getOffset());
-//                    pageParam.put("offset", (Integer) pageParam.get("offset") + properties.getOffset());
                 }
-                List<JSONObject> query = jdbcTemplate.query(StrUtil.format(properties.getSql(),buildArgs(parameterMappings)), convertJson);
-                size = query.size();
-                data.addAll(query);
-            }
+            } while (size > 0);
         }
-
-        logger.debug("data：{}",data);
+        logger.debug("data：{}",dataAll);
         // 数据库同步配置
         this.setProperties(properties);
-        return data;
+        return dataAll;
     }
 
     @Override

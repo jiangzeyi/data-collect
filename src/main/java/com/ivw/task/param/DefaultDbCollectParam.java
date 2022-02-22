@@ -5,9 +5,18 @@ import lombok.Data;
 @Data
 public class DefaultDbCollectParam {
 
-    private Boolean isPage;
-
+    /**
+     * 当前页
+     */
     private Integer page;
 
+    /**
+     * 偏移量
+     */
     private Integer offset;
+
+    /**
+     * 增量开始 id
+     */
+    private Long incrementId;
 }
