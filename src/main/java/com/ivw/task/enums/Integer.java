@@ -1,6 +1,6 @@
 package com.ivw.task.enums;
 
-public enum DBType {
+public enum Integer {
 
     /**
      * Mysql
@@ -14,7 +14,7 @@ public enum DBType {
 
     private final int value;
 
-    DBType(int value) {
+    Integer(int value) {
         this.value = value;
     }
 

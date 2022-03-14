@@ -1,10 +1,5 @@
 package com.ivw.task.sql;
 
-import org.springframework.jdbc.core.PreparedStatementCreatorFactory;
-import org.springframework.jdbc.core.SqlParameter;
-import org.springframework.jdbc.core.SqlParameterValue;
-
-import java.util.ArrayList;
 import java.util.List;
 
 /**

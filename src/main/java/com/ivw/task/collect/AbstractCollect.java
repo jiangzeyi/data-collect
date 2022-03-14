@@ -14,8 +14,6 @@ public abstract class AbstractCollect<T extends AbstractCollectProperties> imple
 
     T properties;
 
-    SqlSource sqlSource;
-
     final Logger logger = LoggerFactory.getLogger(AbstractCollect.class);
 
     @Override

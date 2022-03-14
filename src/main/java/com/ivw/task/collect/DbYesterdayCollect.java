@@ -1,13 +1,11 @@
 package com.ivw.task.collect;
 
 
-import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSONObject;
-import com.ivw.task.enums.DBType;
+import com.ivw.task.enums.Integer;
 import com.ivw.task.properties.DbDateBetweenCollectProperties;
-import com.ivw.task.properties.DbIncrementCollectProperties;
 import com.ivw.task.sql.SqlSource;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -54,30 +52,41 @@ public class DbYesterdayCollect  extends DbAbstractCollect<DbDateBetweenCollectP
             return (jdbcTemplate.query(sqlSource.getSql(), convertJson));
         }
         List<JSONObject> dataAll = new ArrayList<>();
-        if (!properties.getIsPage()) {
-            dataAll = jdbcTemplate.query(sqlSource.getSql(), buildArgs(parameterMappings), convertJson);
-        } else {
+        if (properties.isPage()) {
             int size;
             do {
                 List<JSONObject> data = jdbcTemplate.query(sqlSource.getSql(), buildArgs(parameterMappings), convertJson);
                 dataAll.addAll(data);
                 size = data.size();
-                if (DBType.MYSQL.toString().equals(properties.getDbType().toString())) {
+                if (Integer.MYSQL.getValue() == properties.getType()) {
                     properties.getParam().setPage(properties.getParam().getPage() + properties.getParam().getOffset());
-                } else if (DBType.ORACLE.toString().equals(properties.getDbType().toString())) {
+                } else if (Integer.ORACLE.getValue() == properties.getType()) {
                     properties.getParam().setPage(properties.getParam().getPage() + properties.getParam().getOffset());
                     properties.getParam().setOffset(properties.getParam().getOffset() + properties.getParam().getOffset());
                 }
             } while (size > 0);
+        } else {
+            dataAll = jdbcTemplate.query(sqlSource.getSql(), buildArgs(parameterMappings), convertJson);
         }
-        logger.debug("data：{}",dataAll);
-        // 数据库同步配置
+        // 启用增量只记录最后 ID
+        if (properties.isIncrement()) {
+            // 记录增量 Id
+            long maxPrimaryKey = dataAll.stream().mapToLong(item -> item.getLong(properties.getPrimaryKey()))
+                    .max().orElse(properties.getParam().getIncrementId());
+            properties.getParam().setIncrementId(maxPrimaryKey);
+        }
+
         this.setProperties(properties);
         return dataAll;
     }
 
     @Override
     void finishAfter() {
-
+        // 解析 SQL
+        SqlSource sqlSource = new SqlSource("#{", "}", new ArrayList<>());
+        sqlSource.parse(UPDATE_COLLECT_PARAM_SQL);
+        if (StrUtil.isNotEmpty(sqlSource.getSql())) {
+            jdbcTemplate.update(sqlSource.getSql(),JSONObject.toJSONString(properties), properties.getTaskId());
+        }
     }
 }

@@ -1,7 +1,5 @@
 package com.ivw.task.properties;
 
-import com.ivw.task.enums.DBType;
-import com.ivw.task.param.DefaultDbCollectParam;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
@@ -19,17 +17,17 @@ public abstract class AbstractDbCollectProperties<T> extends AbstractCollectProp
     /**
      * 数据库类型
      */
-    private DBType dbType;
+    private Integer type;
 
     /**
      * 是否开启分月
      */
-    private Boolean isPage;
+    private boolean isPage;
 
     /**
      * 是否开启增量同步
      */
-    private Boolean isIncrement;
+    private boolean isIncrement;
 
     /**
      * 增量 Key

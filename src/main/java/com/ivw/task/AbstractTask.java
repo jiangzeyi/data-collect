@@ -15,8 +15,6 @@ public abstract class AbstractTask implements Job {
 
     TaskProperties properties;
 
-    static final String UPDATE_COLLECT_PARAM_SQL = "update DP_SYS_TASK set COLLECT_PARAM = to_char('{collectParam}') where id = {id}";
-
     @Override
     public void execute(JobExecutionContext context) {
         try {
